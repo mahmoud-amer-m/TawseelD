@@ -1,0 +1,6 @@
+framework module Pods_TawseelDriver {
+  umbrella header "Pods-TawseelDriver-umbrella.h"
+
+  export *
+  module * { export * }
+}
