@@ -27,7 +27,7 @@ class ViewController: UIViewController {
     //Locations Array
     var locationsArray = [String]()
     
-
+    
     @IBOutlet weak var endTripBtn: UIButton!
     @IBOutlet weak var startTripBtn: UIButton!
     
@@ -53,13 +53,18 @@ class ViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         
-        // For test reasons, We'll end the trip when app closed.  
-        self.EndTrip(self.endTripBtn)
-        super.viewWillDisappear(animated)
+        if tripStarted == true {
+            // For test reasons, We'll end the trip when app closed.
+            self.EndTrip(self.endTripBtn)
+            super.viewWillDisappear(animated)
+        }
+        
     }
     
     /* Start a new trip action */
     @IBAction func startATrip(_ sender: UIButton) {
+        //Empty Locations Array
+        locationsArray.removeAll()
         // Set tripStarted to true to indicate that a trip is running
         tripStarted = true
         //Insert new trip record to firebase and hold the inserted key in variable (currentTripKey)
@@ -81,8 +86,7 @@ class ViewController: UIViewController {
     }
     /* End trip action */
     @IBAction func EndTrip(_ sender: UIButton) {
-        // Set tripStarted to false to indicate that trip ended
-        tripStarted = true
+        
         // Reset timer
         timer.invalidate()
         
@@ -119,8 +123,11 @@ class ViewController: UIViewController {
         // UI Staff
         self.startTripBtn.isEnabled = true
         self.endTripBtn.isEnabled = false
+        
+        // Set tripStarted to false to indicate that trip ended
+        tripStarted = false
     }
-
+    
     // Triggered every 5 seconds to update driver location
     func timerAction() {
         //Get integer timestamp
@@ -131,7 +138,7 @@ class ViewController: UIViewController {
         locationsArray.append("\(locCurrentValueValue.latitude),\(locCurrentValueValue.longitude)")
         print(locationsArray)
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
