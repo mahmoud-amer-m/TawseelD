@@ -17,11 +17,16 @@ class ViewController: UIViewController {
     // currentTripKey will hold started trip key
     var currentTripKey = ""
     var timer = Timer()
+    var counter:Int = 0
+    
     var locationManager = CLLocationManager()
     // locationManager coordinate to hold current location and send every 5 seconds
     var locCurrentValueValue = CLLocationCoordinate2D()
     // Bool indicating whether trip running or not
     var tripStarted = false
+    //Locations Array
+    var locationsArray = [String]()
+    
 
     @IBOutlet weak var endTripBtn: UIButton!
     @IBOutlet weak var startTripBtn: UIButton!
@@ -84,6 +89,33 @@ class ViewController: UIViewController {
         // Change trip status to ended (Cost will be updated by firebase queue)
         ref.child("trips/\(currentTripKey)/status").setValue("ended")
         
+        //Prepare the task for Firebase Queue
+        let trip = ["tripID": currentTripKey, "locations" : locationsArray] as [String : Any]
+        print(trip)
+        
+        let jsonData = try? JSONSerialization.data(withJSONObject: trip)
+        
+        // create post request
+        let url = URL(string: "https://tawseel-b2ded.firebaseio.com/queue/tasks.json")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        // insert json data to the request
+        request.httpBody = jsonData
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print(error?.localizedDescription ?? "No data")
+                return
+            }
+            let responseJSON = try? JSONSerialization.jsonObject(with: data, options: [])
+            if let responseJSON = responseJSON as? [String: Any] {
+                print(responseJSON)
+            }
+        }
+        
+        task.resume()
+        
         // UI Staff
         self.startTripBtn.isEnabled = true
         self.endTripBtn.isEnabled = false
@@ -94,6 +126,10 @@ class ViewController: UIViewController {
         //Get integer timestamp
         let timestamp = Int(NSDate.timeIntervalSinceReferenceDate*1000)  //Unique
         ref.child("trips/\(currentTripKey)/locations").child(String(timestamp)).setValue("\(locCurrentValueValue.latitude),\(locCurrentValueValue.longitude)")
+        
+        //Update Locations Array
+        locationsArray.append("\(locCurrentValueValue.latitude),\(locCurrentValueValue.longitude)")
+        print(locationsArray)
     }
 
     override func didReceiveMemoryWarning() {
@@ -115,4 +151,5 @@ extension ViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         locCurrentValueValue = (manager.location?.coordinate)!
     }
+    
 }
