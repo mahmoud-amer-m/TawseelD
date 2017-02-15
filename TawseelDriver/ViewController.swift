@@ -100,7 +100,7 @@ class ViewController: UIViewController {
         
         taskKey = ref.child("queue/tasks").childByAutoId().key
         
-        let childUpdates = ["queue/tasks/\(currentTripKey)": trip]
+        let childUpdates = ["queue/tasks/\(taskKey)": trip]
         ref.updateChildValues(childUpdates)
 //        let jsonData = try? JSONSerialization.data(withJSONObject: trip)
 //        
