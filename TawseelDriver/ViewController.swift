@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     var ref: FIRDatabaseReference!
     // currentTripKey will hold started trip key
     var currentTripKey = ""
+    var taskKey = ""
     var timer = Timer()
     var counter:Int = 0
     
@@ -97,28 +98,32 @@ class ViewController: UIViewController {
         let trip = ["tripID": currentTripKey, "locations" : locationsArray] as [String : Any]
         print(trip)
         
-        let jsonData = try? JSONSerialization.data(withJSONObject: trip)
+        taskKey = ref.child("queue/tasks").childByAutoId().key
         
-        // create post request
-        let url = URL(string: "https://tawseel-b2ded.firebaseio.com/queue/tasks.json")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        // insert json data to the request
-        request.httpBody = jsonData
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print(error?.localizedDescription ?? "No data")
-                return
-            }
-            let responseJSON = try? JSONSerialization.jsonObject(with: data, options: [])
-            if let responseJSON = responseJSON as? [String: Any] {
-                print(responseJSON)
-            }
-        }
-        
-        task.resume()
+        let childUpdates = ["queue/tasks/\(currentTripKey)": trip]
+        ref.updateChildValues(childUpdates)
+//        let jsonData = try? JSONSerialization.data(withJSONObject: trip)
+//        
+//        // create post request
+//        let url = URL(string: "https://tawseel-b2ded.firebaseio.com/queue/tasks.json")!
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "POST"
+//        
+//        // insert json data to the request
+//        request.httpBody = jsonData
+//        
+//        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+//            guard let data = data, error == nil else {
+//                print(error?.localizedDescription ?? "No data")
+//                return
+//            }
+//            let responseJSON = try? JSONSerialization.jsonObject(with: data, options: [])
+//            if let responseJSON = responseJSON as? [String: Any] {
+//                print(responseJSON)
+//            }
+//        }
+//        
+//        task.resume()
         
         // UI Staff
         self.startTripBtn.isEnabled = true
